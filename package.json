@@ -1,0 +1,47 @@
+{
+	"name": "express-ts-validator",
+	"version": "0.0.6",
+	"main": "./dist/cjs/index.js",
+	"module": "./dist/esm/index.js",
+	"types": "./dist/types/index.d.ts",
+	"files": [
+		"dist",
+		"LICENSE",
+		"README.md",
+		"package.json"
+	],
+	"scripts": {
+		"compile": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json"
+	},
+	"compilerOptions": {
+		"outDir": "./dist"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/axelmy318/express-ts-validator.git"
+	},
+	"bugs": {
+		"url": "https://github.com/axelmy318/express-ts-validator/issues"
+	},
+	"homepage": "https://github.com/axelmy318/express-ts-validator#readme",
+	"keywords": [
+		"express",
+		"validator",
+		"query",
+		"typescript",
+		"interfaces",
+		"types"
+	],
+	"author": "Axel Milliery",
+	"license": "MIT",
+	"description": "",
+	"devDependencies": {
+		"@types/node": "^22.1.0",
+		"express": "^4.19.2",
+		"typescript": "^5.5.4"
+	},
+	"dependencies": {
+		"body-parser": "^1.20.2",
+		"dayjs": "^1.11.12"
+	}
+}
