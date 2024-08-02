@@ -1,6 +1,8 @@
 # express-ts-validator 👋
 ☑ Very easy-to-use package
+
 ☑ Highly customizable validators
+
 ☑ Automatically generated types & interfaces
 
 ## Installation 
