@@ -1,6 +1,7 @@
 # express-ts-validator 👋
-Provides highly customizable query validator with automatically generated interfaces & types 
-
+☑ Very easy-to-use package
+☑ Highly customizable validators
+☑ Automatically generated types & interfaces
 
 ## Installation 
 `npm i express-ts-validator`
