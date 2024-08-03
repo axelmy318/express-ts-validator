@@ -12,6 +12,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
     private validate_key;
     private send_invalid_value;
     private isBoolean;
+    private processStringRule;
     private checkBoolean;
     private checkNumber;
     private checkString;

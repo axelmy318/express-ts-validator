@@ -70,7 +70,7 @@ class Validator {
             switch (rule.type) {
                 case 'string':
                     this.checkString(rule, key, value);
-                    processed_val = value;
+                    processed_val = this.processStringRule(rule, key, value);
                     break;
                 case 'number':
                     processed_val = parseFloat(value);
@@ -100,6 +100,24 @@ class Validator {
             throw new ValidationError(key, rule, value, `invalid value for type '${rule.type}'`);
         };
         this.isBoolean = (value) => value === true || value === false || toString.call(value) === '[object Boolean]';
+        //#region Processing of inputs
+        this.processStringRule = (rule, key, value) => {
+            const processed_val = value;
+            if (rule.case) {
+                switch (rule.case) {
+                    case 'lower':
+                        processed_val.toLowerCase();
+                        break;
+                    case 'upper':
+                        processed_val.toUpperCase();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return processed_val;
+        };
+        //#endregion
         //#region Validation of inputs
         this.checkBoolean = (rule, key, value) => {
             if (!this.isBoolean(value))

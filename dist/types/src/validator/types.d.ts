@@ -9,18 +9,13 @@ export declare const matches: {
     URL: RegExp;
     phone: RegExp;
     IPAddress: RegExp;
+    MACAddress: RegExp;
     hexColor: RegExp;
 };
 type DefaultRule<T> = T & {
     required?: boolean;
     list?: boolean;
 };
-export type StringRule = DefaultRule<{
-    type: 'string';
-    notEmpty?: boolean;
-    match?: keyof typeof matches;
-    regExp?: RegExp;
-}>;
 export type DateRule = DefaultRule<{
     type: 'date';
     format?: string;
@@ -41,6 +36,13 @@ export type NumberRule = DefaultRule<{
 export type ObjectRule = DefaultRule<{
     type: 'object';
     validator: ValidationSchema;
+}>;
+export type StringRule = DefaultRule<{
+    type: 'string';
+    notEmpty?: boolean;
+    match?: keyof typeof matches;
+    regExp?: RegExp;
+    case?: 'lower' | 'upper';
 }>;
 export type Rule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;
 export type ValidationSchema = {
