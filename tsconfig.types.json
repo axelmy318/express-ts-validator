@@ -3,7 +3,8 @@
     "compilerOptions": {
         "outDir": "./dist/types",
         "declaration": true,
-        "emitDeclarationOnly": true
+        "emitDeclarationOnly": true,
+        "strictNullChecks": true
     },
     "exclude": [
         "src-test-app",

@@ -6,7 +6,6 @@ import * as Types from './types';
 const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 const DEFAULT_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
-
 export default class Validator<Body extends Record<string, Types.Rule>> {
     private body_keys: Body;
 
@@ -65,7 +64,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
 
             case 'string':
                 this.checkString(rule, key, value);
-                processed_val = value;
+                processed_val = this.processStringRule(rule, key, value);
                 break;
 
             case 'number':
@@ -106,6 +105,26 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
     };
 
     private isBoolean = (value) => value === true || value === false || toString.call(value) === '[object Boolean]';
+
+    //#region Processing of inputs
+    private processStringRule = (rule: Types.StringRule, key: string, value: any): string => {
+        const processed_val = value as string;
+        if (rule.case) {
+            switch (rule.case) {
+                case 'lower':
+                    processed_val.toLowerCase();
+                    break;
+                case 'upper':
+                    processed_val.toUpperCase();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return processed_val;
+    };
+    //#endregion
 
     //#region Validation of inputs
     private checkBoolean = (rule: Types.BooleanRule, key: string, value: any) => {

@@ -10,17 +10,25 @@ export const matches = {
     URL: /^(https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})(\/[^\s]*)?$/,
     phone: /^\+?(\d{1,3})?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(\s*x\d{1,5})?$/,
     IPAddress: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+    MACAddress: /^(([0-9a-fA-F]{2}(\:)){5}|([0-9a-fA-F]{2}(\-)){5})([0-9a-fA-F]{2})$/,
     hexColor: /^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/,
 };
 
 type DefaultRule<T> = T & { required?: boolean; list?: boolean; };
 
-export type StringRule = DefaultRule<{ type: 'string'; notEmpty?: boolean; match?: keyof typeof matches; regExp?: RegExp; }>;
 export type DateRule = DefaultRule<{ type: 'date'; format?: string; }>;
 export type DateTimeRule = DefaultRule<{ type: 'datetime'; format?: string; }>;
 export type BooleanRule = DefaultRule<{ type: 'bool'; }>;
 export type NumberRule = DefaultRule<{ type: 'number'; min?: number, max?: number; allowFloat?: boolean; }>;
 export type ObjectRule = DefaultRule<{ type: 'object'; validator: ValidationSchema; }>;
+export type StringRule = DefaultRule<{
+    type: 'string';
+    notEmpty?: boolean;
+    match?: keyof typeof matches;
+    regExp?: RegExp;
+    case?: 'lower' | 'upper';
+}>;
+
 
 export type Rule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;
 

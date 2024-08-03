@@ -6,8 +6,7 @@ const express = require('express');
 const router = express.Router();
 
 const val2 = new Validator({
-    testdd: { type: 'number', min: 10, max: 1000, allowFloat: false },
-    email: { type: 'string', match: 'email' }
+    myStr: { type: 'string', required: false, case: 'upper' }
 });
 
 type reqBody = typeof val2.Schema;
