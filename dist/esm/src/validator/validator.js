@@ -1,9 +1,33 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dayjs_1 = __importDefault(require("dayjs"));
+const Types = __importStar(require("./types"));
 const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 const DEFAULT_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 class Validator {
@@ -34,10 +58,10 @@ class Validator {
         this.validate_key = (key, rule, value) => {
             var _a, _b;
             let processed_val;
-            const required = rule.required === undefined || rule.required;
+            const required = (rule.required === undefined || rule.required === true);
             if (required && value === undefined)
                 throw new ValidationError(key, rule, value, `missing required parameter of type '(${rule.type})'`);
-            if (rule.required !== undefined && rule.required === false)
+            if (!required && value === undefined)
                 return undefined;
             if (rule.list) {
                 this.checkArray(rule, key, value);
@@ -79,37 +103,40 @@ class Validator {
         //#region Validation of inputs
         this.checkBoolean = (rule, key, value) => {
             if (!this.isBoolean(value))
-                return this.send_invalid_value(key, rule, value);
-            return true;
+                this.send_invalid_value(key, rule, value);
         };
         this.checkNumber = (rule, key, value) => {
             if (Number.isNaN(value))
-                return this.send_invalid_value(key, rule, value);
-            return true;
+                this.send_invalid_value(key, rule, value);
+            if (rule.max !== undefined && value > rule.max)
+                throw new ValidationError(key, rule, value, `cannot be greater than ${rule.max}`);
+            if (rule.min !== undefined && value < rule.min)
+                throw new ValidationError(key, rule, value, `cannot be lower than ${rule.min}`);
         };
         this.checkString = (rule, key, value) => {
             if (value !== undefined && typeof value !== typeof 'string')
-                return this.send_invalid_value(key, rule, value);
+                this.send_invalid_value(key, rule, value);
             if (rule.notEmpty && value === '')
-                return this.send_invalid_value(key, rule, value);
-            return true;
+                this.send_invalid_value(key, rule, value);
+            if (rule.regExp && rule.match)
+                throw new ValidationError(key, rule, value, `regExp and match cannot both be defined at the same time.`);
+            const expression = rule.regExp ? rule.regExp : rule.match ? Types.matches[rule.match] : undefined;
+            if (expression && !expression.test(value))
+                throw new ValidationError(key, rule, value, `value does not match given RegExp`);
         };
         this.checkDate = (rule, key, value) => {
             var _a;
             if (!(0, dayjs_1.default)(value, (_a = rule.format) !== null && _a !== void 0 ? _a : DEFAULT_DATE_FORMAT, true).isValid())
-                return this.send_invalid_value(key, rule, value);
-            return true;
+                this.send_invalid_value(key, rule, value);
         };
         this.checkDateTime = (rule, key, value) => {
             var _a;
             if (!(0, dayjs_1.default)(value, (_a = rule.format) !== null && _a !== void 0 ? _a : DEFAULT_DATETIME_FORMAT, true).isValid())
-                return this.send_invalid_value(key, rule, value);
-            return true;
+                this.send_invalid_value(key, rule, value);
         };
         this.checkArray = (rule, key, value) => {
             if (!Array.isArray(value))
                 throw new ValidationError(key, rule, value, `Expected a list of '${rule.type}'`);
-            return true;
         };
         this.body_keys = keys;
     }

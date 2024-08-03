@@ -1,4 +1,11 @@
 import { Dayjs } from "dayjs";
+export declare const matches: {
+    email: RegExp;
+    alphanumeric: RegExp;
+    alphabetical: RegExp;
+    numerical: RegExp;
+    UUID: RegExp;
+};
 type DefaultRule<T> = T & {
     required?: boolean;
     list?: boolean;
@@ -6,6 +13,8 @@ type DefaultRule<T> = T & {
 export type StringRule = DefaultRule<{
     type: 'string';
     notEmpty?: boolean;
+    match?: keyof typeof matches;
+    regExp?: RegExp;
 }>;
 export type DateRule = DefaultRule<{
     type: 'date';
@@ -20,6 +29,8 @@ export type BooleanRule = DefaultRule<{
 }>;
 export type NumberRule = DefaultRule<{
     type: 'number';
+    min?: number;
+    max?: number;
 }>;
 export type ObjectRule = DefaultRule<{
     type: 'object';

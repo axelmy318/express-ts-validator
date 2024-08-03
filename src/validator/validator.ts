@@ -1,16 +1,18 @@
 
 import dayjs from "dayjs";
 import { NextFunction, Request, Response } from "express";
-import * as Types from './types.js';
+import * as Types from './types';
 
 const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 const DEFAULT_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+
 
 export default class Validator<Body extends Record<string, Types.Rule>> {
     private body_keys: Body;
 
     // Make a "body" variable, a "param" variable", etc...
     public Request: Request & { body: Types.InferInterface<Body>; };
+
     public schema: Types.InferInterface<Body>;
 
     constructor(keys: Body) {
@@ -46,12 +48,12 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
 
     private validate_key = (key: string, rule: Types.Rule, value: any) => {
         let processed_val: any;
-        const required = rule.required === undefined || rule.required;
+        const required = (rule.required === undefined || rule.required === true);
 
         if (required && value === undefined)
             throw new ValidationError(key, rule, value, `missing required parameter of type '(${rule.type})'`);
 
-        if (rule.required !== undefined && rule.required === false)
+        if (!required && value === undefined)
             return undefined;
 
         if (rule.list) {
@@ -106,48 +108,50 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
     private isBoolean = (value) => value === true || value === false || toString.call(value) === '[object Boolean]';
 
     //#region Validation of inputs
-    private checkBoolean = (rule: Types.BooleanRule, key: string, value: any): boolean => {
+    private checkBoolean = (rule: Types.BooleanRule, key: string, value: any) => {
         if (!this.isBoolean(value))
-            return this.send_invalid_value(key, rule, value);
-
-        return true;
+            this.send_invalid_value(key, rule, value);
     };
 
-    private checkNumber = (rule: Types.NumberRule, key: string, value: number): boolean => {
+    private checkNumber = (rule: Types.NumberRule, key: string, value: number) => {
         if (Number.isNaN(value))
-            return this.send_invalid_value(key, rule, value);
+            this.send_invalid_value(key, rule, value);
 
-        return true;
+        if (rule.max !== undefined && value > rule.max)
+            throw new ValidationError(key, rule, value, `cannot be greater than ${rule.max}`);
+
+        if (rule.min !== undefined && value < rule.min)
+            throw new ValidationError(key, rule, value, `cannot be lower than ${rule.min}`);
     };
 
-    private checkString = (rule: Types.StringRule, key: string, value: any): boolean => {
+    private checkString = (rule: Types.StringRule, key: string, value: any) => {
         if (value !== undefined && typeof value !== typeof 'string')
-            return this.send_invalid_value(key, rule, value);
+            this.send_invalid_value(key, rule, value);
         if (rule.notEmpty && value === '')
-            return this.send_invalid_value(key, rule, value);
+            this.send_invalid_value(key, rule, value);
 
-        return true;
+        if (rule.regExp && rule.match)
+            throw new ValidationError(key, rule, value, `regExp and match cannot both be defined at the same time.`);
+
+        const expression = rule.regExp ? rule.regExp : rule.match ? Types.matches[rule.match] : undefined;
+
+        if (expression && !expression.test(value))
+            throw new ValidationError(key, rule, value, `value does not match given RegExp`);
     };
 
-    private checkDate = (rule: Types.DateRule, key: string, value: any): boolean => {
+    private checkDate = (rule: Types.DateRule, key: string, value: any) => {
         if (!dayjs(value, rule.format ?? DEFAULT_DATE_FORMAT, true).isValid())
-            return this.send_invalid_value(key, rule, value);
-
-        return true;
+            this.send_invalid_value(key, rule, value);
     };
 
-    private checkDateTime = (rule: Types.DateTimeRule, key: string, value: any): boolean => {
+    private checkDateTime = (rule: Types.DateTimeRule, key: string, value: any) => {
         if (!dayjs(value, rule.format ?? DEFAULT_DATETIME_FORMAT, true).isValid())
-            return this.send_invalid_value(key, rule, value);
-
-        return true;
+            this.send_invalid_value(key, rule, value);
     };
 
-    private checkArray = (rule: Types.Rule, key: string, value: any): boolean => {
+    private checkArray = (rule: Types.Rule, key: string, value: any) => {
         if (!Array.isArray(value))
             throw new ValidationError(key, rule, value, `Expected a list of '${rule.type}'`);
-
-        return true;
     };
 
     //#endregion

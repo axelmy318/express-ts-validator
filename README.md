@@ -43,4 +43,6 @@ router.post('user/:id/edit', bodyParser.json(), userEdit.validate, (req: Request
 ## Checklist
 - [x] Support for list validation
 - [x] Support for objects validation
+- [x] Ability to match on regex for string types
+- [x] Min and max values for numbers
 - [ ] Support for momentjs (choosing between dayjs and momentjs)

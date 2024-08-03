@@ -1,12 +1,20 @@
 import { Dayjs } from "dayjs";
 
+export const matches = {
+    email: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/,
+    alphanumeric: /^[A-Za-z0-9]*$/,
+    alphabetical: /^[A-Za-z]*$/,
+    numerical: /^[0-9]*$/,
+    UUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+};
+
 type DefaultRule<T> = T & { required?: boolean; list?: boolean; };
 
-export type StringRule = DefaultRule<{ type: 'string'; notEmpty?: boolean; }>;
+export type StringRule = DefaultRule<{ type: 'string'; notEmpty?: boolean; match?: keyof typeof matches; regExp?: RegExp; }>;
 export type DateRule = DefaultRule<{ type: 'date'; format?: string; }>;
 export type DateTimeRule = DefaultRule<{ type: 'datetime'; format?: string; }>;
 export type BooleanRule = DefaultRule<{ type: 'bool'; }>;
-export type NumberRule = DefaultRule<{ type: 'number'; }>;
+export type NumberRule = DefaultRule<{ type: 'number'; min?: number, max?: number; }>;
 export type ObjectRule = DefaultRule<{ type: 'object'; validator: ValidationSchema; }>;
 
 export type Rule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;

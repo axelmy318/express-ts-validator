@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import * as Types from './types.js';
+import * as Types from './types';
 export default class Validator<Body extends Record<string, Types.Rule>> {
     private body_keys;
     Request: Request & {
