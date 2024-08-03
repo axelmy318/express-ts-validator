@@ -58,7 +58,7 @@ class Validator {
         this.validate_key = (key, rule, value) => {
             var _a, _b;
             let processed_val;
-            const required = (rule.required === undefined || rule.required === true);
+            const required = rule.required !== false;
             if (required && value === undefined)
                 throw new ValidationError(key, rule, value, `missing required parameter of type '(${rule.type})'`);
             if (!required && value === undefined)
@@ -73,7 +73,7 @@ class Validator {
                     processed_val = value;
                     break;
                 case 'number':
-                    processed_val = parseInt(value);
+                    processed_val = parseFloat(value);
                     this.checkNumber(rule, key, processed_val);
                     break;
                 case 'bool':
@@ -112,6 +112,8 @@ class Validator {
                 throw new ValidationError(key, rule, value, `cannot be greater than ${rule.max}`);
             if (rule.min !== undefined && value < rule.min)
                 throw new ValidationError(key, rule, value, `cannot be lower than ${rule.min}`);
+            if (rule.allowFloat === false && value % 1 !== 0)
+                throw new ValidationError(key, rule, value, `floats not allowed`);
         };
         this.checkString = (rule, key, value) => {
             if (value !== undefined && typeof value !== typeof 'string')

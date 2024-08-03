@@ -5,7 +5,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
     Request: Request & {
         body: Types.InferInterface<Body>;
     };
-    schema: Types.InferInterface<Body>;
+    Schema: Types.InferInterface<Body>;
     constructor(keys: Body);
     validate: (req: Request, res: Response, next: NextFunction) => any;
     private validate_keys;

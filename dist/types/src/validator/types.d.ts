@@ -36,6 +36,7 @@ export type NumberRule = DefaultRule<{
     type: 'number';
     min?: number;
     max?: number;
+    allowFloat?: boolean;
 }>;
 export type ObjectRule = DefaultRule<{
     type: 'object';
