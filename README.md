@@ -8,6 +8,9 @@
 ## Installation 
 `npm i express-ts-validator`
 
+#### For typescript users
+Ensure you have `"strictNullChecks": true` in your TS config file. Otherwise, non-required parameters will not be marked as optional
+
 
 ## Guides & examples 👀
 
