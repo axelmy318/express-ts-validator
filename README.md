@@ -21,7 +21,7 @@ import Validator from 'express-ts-validator'
 
 const userEdit = new Validator({
     name: { type: 'string', notEmpty: true },
-    age: { type: 'number', required: false },
+    email: { type: 'string', match: 'email', required: true },
     birthdate: { type: 'date', format: 'YYYY-MM-DD' },
     hobbies: { type: 'string', list: true },
     pets: {
@@ -29,12 +29,13 @@ const userEdit = new Validator({
         list: true, 
         validator: {
             name: { type: 'string' },
-            isNice: { type: 'bool' }
+            isNice: { type: 'bool' },
+            age: { type: 'number', required: false }
         }
     } 
 });
 
-router.post('user/:id/edit', bodyParser.json(), userEdit.validate, (req: Request & { body: typeof userEdit.schema }, res: Response) => {
+router.post('user/:id/edit', bodyParser.json(), userEdit.validate, (req: typeof userEdit.Request, res: Response) => {
     console.log(req.body.pets.map(p => `${p.name} is ${p.isNice ? 'nice' : 'naughty'}`))
     res.status(200).send('The entire request body is automatically typed !')
 })
