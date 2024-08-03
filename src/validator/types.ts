@@ -19,7 +19,7 @@ export type StringRule = DefaultRule<{ type: 'string'; notEmpty?: boolean; match
 export type DateRule = DefaultRule<{ type: 'date'; format?: string; }>;
 export type DateTimeRule = DefaultRule<{ type: 'datetime'; format?: string; }>;
 export type BooleanRule = DefaultRule<{ type: 'bool'; }>;
-export type NumberRule = DefaultRule<{ type: 'number'; min?: number, max?: number; }>;
+export type NumberRule = DefaultRule<{ type: 'number'; min?: number, max?: number; allowFloat?: boolean; }>;
 export type ObjectRule = DefaultRule<{ type: 'object'; validator: ValidationSchema; }>;
 
 export type Rule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;

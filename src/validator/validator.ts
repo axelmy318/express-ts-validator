@@ -13,7 +13,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
     // Make a "body" variable, a "param" variable", etc...
     public Request: Request & { body: Types.InferInterface<Body>; };
 
-    public schema: Types.InferInterface<Body>;
+    public Schema: Types.InferInterface<Body>;
 
     constructor(keys: Body) {
         this.body_keys = keys;
@@ -48,7 +48,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
 
     private validate_key = (key: string, rule: Types.Rule, value: any) => {
         let processed_val: any;
-        const required = (rule.required === undefined || rule.required === true);
+        const required = rule.required !== false;
 
         if (required && value === undefined)
             throw new ValidationError(key, rule, value, `missing required parameter of type '(${rule.type})'`);
@@ -69,7 +69,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
                 break;
 
             case 'number':
-                processed_val = parseInt(value);
+                processed_val = parseFloat(value);
                 this.checkNumber(rule, key, processed_val);
                 break;
 
@@ -122,6 +122,9 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
 
         if (rule.min !== undefined && value < rule.min)
             throw new ValidationError(key, rule, value, `cannot be lower than ${rule.min}`);
+
+        if (rule.allowFloat === false && value % 1 !== 0)
+            throw new ValidationError(key, rule, value, `floats not allowed`);
     };
 
     private checkString = (rule: Types.StringRule, key: string, value: any) => {
