@@ -1,7 +1,6 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "listEmittedFiles": true,
         "outDir": "./dist/cjs",
         "module": "commonjs",
     },
