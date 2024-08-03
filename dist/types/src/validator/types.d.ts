@@ -5,6 +5,11 @@ export declare const matches: {
     alphabetical: RegExp;
     numerical: RegExp;
     UUID: RegExp;
+    strongPassword: RegExp;
+    URL: RegExp;
+    phone: RegExp;
+    IPAddress: RegExp;
+    hexColor: RegExp;
 };
 type DefaultRule<T> = T & {
     required?: boolean;
