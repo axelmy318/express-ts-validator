@@ -1,4 +1,5 @@
 import { Dayjs } from "dayjs";
+import { Request as ExpressRequest } from "express";
 
 export const matches = {
     email: /(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/,
@@ -16,25 +17,21 @@ export const matches = {
 
 type DefaultRule<T> = T & { required?: boolean; list?: boolean; };
 
+export type StringRule = DefaultRule<{ type: 'string'; notEmpty?: boolean; match?: keyof typeof matches; regExp?: RegExp; }>;
 export type DateRule = DefaultRule<{ type: 'date'; format?: string; }>;
 export type DateTimeRule = DefaultRule<{ type: 'datetime'; format?: string; }>;
 export type BooleanRule = DefaultRule<{ type: 'bool'; }>;
 export type NumberRule = DefaultRule<{ type: 'number'; min?: number, max?: number; allowFloat?: boolean; }>;
-export type ObjectRule = DefaultRule<{ type: 'object'; validator: ValidationSchema; }>;
-export type StringRule = DefaultRule<{
-    type: 'string';
-    notEmpty?: boolean;
-    match?: keyof typeof matches;
-    regExp?: RegExp;
-    case?: 'lower' | 'upper';
-}>;
-
+export type ObjectRule = DefaultRule<{ type: 'object'; validator: ValidationSchema<BodyRule>; }>;
+export type WithoutRequired<T> = Omit<T, 'required'>;
 
 export type Rule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;
+export type BodyRule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;
+export type ParamRule = WithoutRequired<StringRule>;
 
-export type ValidationSchema = { [key: string]: Rule; };
+export type ValidationSchema<T extends Rule | BodyRule | ParamRule> = { [key: string]: T; };
 
-type TypeFromRule<T extends Rule> = T['type'] extends 'string'
+type TypeFromRule<T extends BodyRule | ParamRule> = T['type'] extends 'string'
     ? string
     : T['type'] extends 'number'
     ? number
@@ -45,13 +42,17 @@ type TypeFromRule<T extends Rule> = T['type'] extends 'string'
     : T['type'] extends 'date'
     ? Dayjs
     : T['type'] extends 'object'
-    ? InferInterface<T extends ObjectRule ? T['validator'] : {}>
+    ? InferBodyInterface<T extends ObjectRule ? T['validator'] : {}>
     : any;
 
-export type InferInterface<T extends ValidationSchema> = {
+export type InferBodyInterface<T extends ValidationSchema<BodyRule>> = {
     [K in keyof T]: T[K]['required'] extends false
-    ? InferInterfacelist<T[K]> | undefined
-    : InferInterfacelist<T[K]>
+    ? InferInterfaceList<T[K]> | undefined
+    : InferInterfaceList<T[K]>
 };
 
-export type InferInterfacelist<T extends Rule> = T['list'] extends true ? TypeFromRule<T>[] : TypeFromRule<T>;
+export type InferParamInterface<T extends ValidationSchema<ParamRule>> = {
+    [K in keyof T]: InferInterfaceList<T[K]>
+};
+
+type InferInterfaceList<T extends BodyRule | ParamRule> = T['list'] extends true ? TypeFromRule<T>[] : TypeFromRule<T>;

@@ -6,25 +6,32 @@ import * as Types from './types';
 const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 const DEFAULT_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
-export default class Validator<Body extends Record<string, Types.Rule>> {
+export default class Validator<Body extends Record<string, Types.BodyRule>, Param extends Record<string, Types.ParamRule>> {
     private body_keys: Body;
+    private param_keys: Param;
 
-    // Make a "body" variable, a "param" variable", etc...
-    public Request: Request & { body: Types.InferInterface<Body>; };
+    public Schema: Types.InferBodyInterface<Body>;
+    public Request: Request<Types.InferParamInterface<Param>, {}, Types.InferBodyInterface<Body>>;
 
-    public Schema: Types.InferInterface<Body>;
-
-    constructor(keys: Body) {
-        this.body_keys = keys;
+    constructor(body?: Body, param?: Param) {
+        if (body)
+            this.body_keys = body;
+        if (param)
+            this.param_keys = param;
     }
 
     public validate = (req: Request, res: Response, next: NextFunction) => {
         try {
-            const validatedPayload = this.validate_keys(this.body_keys, req.body);
+            if (this.body_keys !== undefined) {
+                const validatedPayload = this.validate_keys(this.body_keys, req.body);
+                req.body = validatedPayload;
+            }
 
-            req.body = validatedPayload;
-            // res.send(req.body);
-            // return;
+            if (this.param_keys !== undefined) {
+                const validatedParams = this.validate_keys(this.param_keys, req.params);
+                req.params = validatedParams;
+            }
+
             return next();
         } catch (e) {
             if (e instanceof ValidationError)
@@ -35,14 +42,14 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
         }
     };
 
-    private validate_keys = (keys: Types.ValidationSchema, dataset: Object) => {
+    private validate_keys = (keys: Types.ValidationSchema<Types.Rule>, dataset: Object) => {
         const keys_key = Object.keys(keys);
 
-        const validObj = {};
+        const obj = {};
         for (const k of keys_key)
-            validObj[k] = this.validate_key(k, keys[k], dataset !== undefined ? dataset[k] : undefined);
+            obj[k] = this.validate_key(k, keys[k], dataset !== undefined ? dataset[k] : undefined);
 
-        return validObj;
+        return obj;
     };
 
     private validate_key = (key: string, rule: Types.Rule, value: any) => {
@@ -64,7 +71,7 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
 
             case 'string':
                 this.checkString(rule, key, value);
-                processed_val = this.processStringRule(rule, key, value);
+                processed_val = value;
                 break;
 
             case 'number':
@@ -105,26 +112,6 @@ export default class Validator<Body extends Record<string, Types.Rule>> {
     };
 
     private isBoolean = (value) => value === true || value === false || toString.call(value) === '[object Boolean]';
-
-    //#region Processing of inputs
-    private processStringRule = (rule: Types.StringRule, key: string, value: any): string => {
-        const processed_val = value as string;
-        if (rule.case) {
-            switch (rule.case) {
-                case 'lower':
-                    processed_val.toLowerCase();
-                    break;
-                case 'upper':
-                    processed_val.toUpperCase();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return processed_val;
-    };
-    //#endregion
 
     //#region Validation of inputs
     private checkBoolean = (rule: Types.BooleanRule, key: string, value: any) => {

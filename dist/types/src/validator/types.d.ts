@@ -16,6 +16,12 @@ type DefaultRule<T> = T & {
     required?: boolean;
     list?: boolean;
 };
+export type StringRule = DefaultRule<{
+    type: 'string';
+    notEmpty?: boolean;
+    match?: keyof typeof matches;
+    regExp?: RegExp;
+}>;
 export type DateRule = DefaultRule<{
     type: 'date';
     format?: string;
@@ -35,22 +41,21 @@ export type NumberRule = DefaultRule<{
 }>;
 export type ObjectRule = DefaultRule<{
     type: 'object';
-    validator: ValidationSchema;
+    validator: ValidationSchema<BodyRule>;
 }>;
-export type StringRule = DefaultRule<{
-    type: 'string';
-    notEmpty?: boolean;
-    match?: keyof typeof matches;
-    regExp?: RegExp;
-    case?: 'lower' | 'upper';
-}>;
+export type WithoutRequired<T> = Omit<T, 'required'>;
 export type Rule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;
-export type ValidationSchema = {
-    [key: string]: Rule;
+export type BodyRule = StringRule | NumberRule | BooleanRule | DateRule | DateTimeRule | ObjectRule;
+export type ParamRule = WithoutRequired<StringRule>;
+export type ValidationSchema<T extends Rule | BodyRule | ParamRule> = {
+    [key: string]: T;
 };
-type TypeFromRule<T extends Rule> = T['type'] extends 'string' ? string : T['type'] extends 'number' ? number : T['type'] extends 'boolean' ? boolean : T['type'] extends 'datetime' ? Dayjs : T['type'] extends 'date' ? Dayjs : T['type'] extends 'object' ? InferInterface<T extends ObjectRule ? T['validator'] : {}> : any;
-export type InferInterface<T extends ValidationSchema> = {
-    [K in keyof T]: T[K]['required'] extends false ? InferInterfacelist<T[K]> | undefined : InferInterfacelist<T[K]>;
+type TypeFromRule<T extends BodyRule | ParamRule> = T['type'] extends 'string' ? string : T['type'] extends 'number' ? number : T['type'] extends 'boolean' ? boolean : T['type'] extends 'datetime' ? Dayjs : T['type'] extends 'date' ? Dayjs : T['type'] extends 'object' ? InferBodyInterface<T extends ObjectRule ? T['validator'] : {}> : any;
+export type InferBodyInterface<T extends ValidationSchema<BodyRule>> = {
+    [K in keyof T]: T[K]['required'] extends false ? InferInterfaceList<T[K]> | undefined : InferInterfaceList<T[K]>;
 };
-export type InferInterfacelist<T extends Rule> = T['list'] extends true ? TypeFromRule<T>[] : TypeFromRule<T>;
+export type InferParamInterface<T extends ValidationSchema<ParamRule>> = {
+    [K in keyof T]: InferInterfaceList<T[K]>;
+};
+type InferInterfaceList<T extends BodyRule | ParamRule> = T['list'] extends true ? TypeFromRule<T>[] : TypeFromRule<T>;
 export {};

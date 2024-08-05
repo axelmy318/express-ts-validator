@@ -7,11 +7,14 @@ const router = express.Router();
 
 const val2 = new Validator({
     myStr: { type: 'string', required: false, case: 'upper' }
+}, {
+    test: { type: 'string' }
 });
 
-type reqBody = typeof val2.Schema;
+type reqBody = typeof val2.Request;
 
-router.get('/list', bodyParser.json(), val2.validate, async (req: Request & { body: typeof val2.Schema; }, res: Response) => {
+router.get('/list', bodyParser.json(), val2.validate, async (req: typeof val2.Request, res: Response) => {
+
     console.log(req.body);
 });
 

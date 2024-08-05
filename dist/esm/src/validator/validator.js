@@ -31,13 +31,17 @@ const Types = __importStar(require("./types"));
 const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 const DEFAULT_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 class Validator {
-    constructor(keys) {
+    constructor(body, param) {
         this.validate = (req, res, next) => {
             try {
-                const validatedPayload = this.validate_keys(this.body_keys, req.body);
-                req.body = validatedPayload;
-                // res.send(req.body);
-                // return;
+                if (this.body_keys !== undefined) {
+                    const validatedPayload = this.validate_keys(this.body_keys, req.body);
+                    req.body = validatedPayload;
+                }
+                if (this.param_keys !== undefined) {
+                    const validatedParams = this.validate_keys(this.param_keys, req.params);
+                    req.params = validatedParams;
+                }
                 return next();
             }
             catch (e) {
@@ -50,10 +54,10 @@ class Validator {
         };
         this.validate_keys = (keys, dataset) => {
             const keys_key = Object.keys(keys);
-            const validObj = {};
+            const obj = {};
             for (const k of keys_key)
-                validObj[k] = this.validate_key(k, keys[k], dataset !== undefined ? dataset[k] : undefined);
-            return validObj;
+                obj[k] = this.validate_key(k, keys[k], dataset !== undefined ? dataset[k] : undefined);
+            return obj;
         };
         this.validate_key = (key, rule, value) => {
             var _a, _b;
@@ -70,7 +74,7 @@ class Validator {
             switch (rule.type) {
                 case 'string':
                     this.checkString(rule, key, value);
-                    processed_val = this.processStringRule(rule, key, value);
+                    processed_val = value;
                     break;
                 case 'number':
                     processed_val = parseFloat(value);
@@ -100,24 +104,6 @@ class Validator {
             throw new ValidationError(key, rule, value, `invalid value for type '${rule.type}'`);
         };
         this.isBoolean = (value) => value === true || value === false || toString.call(value) === '[object Boolean]';
-        //#region Processing of inputs
-        this.processStringRule = (rule, key, value) => {
-            const processed_val = value;
-            if (rule.case) {
-                switch (rule.case) {
-                    case 'lower':
-                        processed_val.toLowerCase();
-                        break;
-                    case 'upper':
-                        processed_val.toUpperCase();
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return processed_val;
-        };
-        //#endregion
         //#region Validation of inputs
         this.checkBoolean = (rule, key, value) => {
             if (!this.isBoolean(value))
@@ -158,7 +144,10 @@ class Validator {
             if (!Array.isArray(value))
                 throw new ValidationError(key, rule, value, `Expected a list of '${rule.type}'`);
         };
-        this.body_keys = keys;
+        if (body)
+            this.body_keys = body;
+        if (param)
+            this.param_keys = param;
     }
 }
 exports.default = Validator;
